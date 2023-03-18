@@ -1,0 +1,35 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "address[]",
+        "name": "validators",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "insuranceDeposit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "formHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "coverImageHash",
+        "type": "string"
+      }
+    ],
+    "name": "addProcess",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
