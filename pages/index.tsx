@@ -1,17 +1,44 @@
 import React from "react";
+import { Stack, Text } from "@chakra-ui/react";
+import Link from "next/link";
+import Image from "next/image";
+import { apolloClient } from "@frameworks/apolloClient/apolloClient";
+import { getProcessQuery } from "@frameworks/apolloClient/queries.qgl";
 import Layout from "@components/Layout";
 
+interface IProcessSummary {
+  id: string;
+  name: string;
+  coverImage: string;
+}
+
 export default function IndexPage() {
+  const [processes, setProcesses] = React.useState<IProcessSummary[]>([]);
+
+  React.useEffect(() => {
+    const fetchProcesses = async () => {
+      const { data } = await apolloClient.query({
+        query: getProcessQuery,
+      });
+      setProcesses(data.processes);
+    };
+    fetchProcesses();
+  }, []);
   return (
     <Layout title="Home | Next.js + TypeScript Example">
-      <main>
-        <div className="flex min-h-screen flex-col items-center justify-center text-center">
-          <h1 className="text-2xl">Hello Next.js 👋</h1>
-          <p className="mt-2 text-gray-800">
-            A starter for Next.js, Tailwind CSS, and TypeScript
-          </p>
-        </div>
-      </main>
+      <Stack direction="row" spacing={4}>
+        {processes.map((process) => (
+          <Link key={process.id} href={`process/${process.id}`}>
+            <Stack spacing={2}>
+              <Image
+                src={`https://ipfs.io/ipfs/${process.coverImage}`}
+                alt={process.name}
+              />
+              <Text>{process.name}</Text>
+            </Stack>
+          </Link>
+        ))}
+      </Stack>
     </Layout>
   );
 }

@@ -1,8 +1,4 @@
-import {
-  EthereumClient,
-  modalConnectors,
-  walletConnectProvider,
-} from "@web3modal/ethereum";
+import { EthereumClient, w3mConnectors } from "@web3modal/ethereum";
 import { configureChains, createClient, goerli } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 
@@ -13,18 +9,17 @@ const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 const { chains, provider, webSocketProvider } = configureChains(
   [goerli],
-  [publicProvider(), walletConnectProvider({ projectId })],
+  [publicProvider()],
 );
 
 const wagmiClient = createClient({
   autoConnect: true,
   provider,
   webSocketProvider,
-  connectors: modalConnectors({
-    appName: "supplyDAO",
+  connectors: w3mConnectors({
     chains: [goerli],
-    version: "2",
     projectId,
+    version: 1,
   }),
 });
 

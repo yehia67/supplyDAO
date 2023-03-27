@@ -1,6 +1,6 @@
 import { create } from "ipfs-http-client";
 
-const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+const projectId = process.env.NEXT_PUBLIC_IPFS_PROJECT_ID;
 
 const projectSecret = process.env.NEXT_PUBLIC_PROJECT_SECRET;
 

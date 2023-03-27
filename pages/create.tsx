@@ -11,9 +11,13 @@ import {
 
 import Layout from "@components/Layout";
 import { usePrepareContractWrite, useContractWrite } from "wagmi";
-import { SupplyChainContractArtifacts } from "@abis/contracts";
+import {
+  ERC20ContractArtifacts,
+  SupplyChainContractArtifacts,
+} from "@abis/contracts";
 import { uploadIPFS } from "@frameworks/ipfs";
 import toast from "react-hot-toast";
+import { parseEther } from "ethers/lib/utils.js";
 
 type InputType = "text" | "number" | "image";
 interface IInputField {
@@ -38,7 +42,7 @@ export default function Create() {
   const [fields, setFields] = React.useState<IInputField[]>([
     { inputType: "text" },
   ]);
-  const [formHash, setFormHash] = React.useState("");
+  const formHash = React.useRef("");
 
   const addField = () => {
     setFields([...fields, { inputType: "text" }]);
@@ -67,16 +71,36 @@ export default function Create() {
   };
   const { config } = usePrepareContractWrite({
     address: SupplyChainContractArtifacts.address as `0x{}`,
-    abi: SupplyChainContractArtifacts.abi,
+    abi: SupplyChainContractArtifacts.abi as any,
     functionName: "addProcess",
     args: [
       daoDetails.name,
       daoDetails.validators,
-      daoDetails.insuranceAmount,
-      formHash,
+      parseEther(daoDetails.insuranceAmount.toString()),
+      formHash.current,
       daoDetails.imageHash,
     ],
   });
+
+  const { config: erc20Config } = usePrepareContractWrite({
+    address: ERC20ContractArtifacts.address as `0x{}`,
+    abi: ERC20ContractArtifacts.abi,
+    functionName: "approve",
+    args: [
+      SupplyChainContractArtifacts.address,
+      parseEther(daoDetails.insuranceAmount.toString()),
+    ],
+  });
+  const { write: approve, error: approveError } = useContractWrite(erc20Config);
+
+  const onApprove = () => {
+    if (!approveError) {
+      approve!();
+      return;
+    }
+    toast.error(`${approveError.toString()}`);
+  };
+
   const { write: addProcessWeb3, error } = useContractWrite(config);
   const onSubmit = async () => {
     const inputField = fields.map((field, index) => {
@@ -88,11 +112,18 @@ export default function Create() {
     const currentFormHash = await uploadIPFS({
       content: JSON.stringify({ inputField }),
     });
-    setFormHash(currentFormHash as string);
+    formHash.current = currentFormHash as string;
     if (error) {
       toast.error(`${error.toString()}`);
       return;
     }
+    console.log([
+      daoDetails.name,
+      daoDetails.validators,
+      parseEther(daoDetails.insuranceAmount.toString()),
+      formHash.current,
+      daoDetails.imageHash,
+    ]);
     addProcessWeb3!();
   };
 
@@ -258,7 +289,23 @@ export default function Create() {
               }}
             />
           </FormControl>
-          <Box display="flex" alignItems="center" justifyContent="center">
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            marginTop={5}
+          >
+            <Button
+              type="button"
+              onClick={onApprove}
+              fontWeight="bold"
+              bgColor="blue.500"
+              color="white"
+              _hover={{ bgColor: "blue.700" }}
+              _focus={{ outline: "none", boxShadow: "outline" }}
+            >
+              Approve
+            </Button>
             <Button
               type="button"
               onClick={onSubmit}
